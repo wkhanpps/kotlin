@@ -173,18 +173,8 @@ class VarargInjectionLowering constructor(val context: CommonBackendContext): De
     private val intPlusInt = symbols.intPlusInt.owner
 
     private fun arrayType(type: IrType): ArrayHandle {
-        val primitiveType = KotlinBuiltIns.getPrimitiveArrayType(type.classifierOrFail.descriptor)
-        return when (primitiveType) {
-            PrimitiveType.BYTE    -> kByteArrayHandler
-            PrimitiveType.SHORT   -> kShortArrayHandler
-            PrimitiveType.CHAR    -> kCharArrayHandler
-            PrimitiveType.INT     -> kIntArrayHandler
-            PrimitiveType.LONG    -> kLongArrayHandler
-            PrimitiveType.FLOAT   -> kFloatArrayHandler
-            PrimitiveType.DOUBLE  -> kDoubleArrayHandler
-            PrimitiveType.BOOLEAN -> kBooleanArrayHandler
-            else                  -> kArrayHandler
-        }
+        val arrayClass = type.classifierOrFail
+        return arrayToHandle[arrayClass] ?: error(arrayClass.descriptor)
     }
 
     private fun IrBuilderWithScope.intPlus() = irCall(intPlusInt)
@@ -233,15 +223,7 @@ class VarargInjectionLowering constructor(val context: CommonBackendContext): De
                            val sizeGetterSymbol: IrFunctionSymbol,
                            val copyRangeToSymbol: IrFunctionSymbol)
 
-    val kByteArrayHandler    = handle(symbols.byteArray)
-    val kCharArrayHandler    = handle(symbols.charArray)
-    val kShortArrayHandler   = handle(symbols.shortArray)
-    val kIntArrayHandler     = handle(symbols.intArray)
-    val kLongArrayHandler    = handle(symbols.longArray)
-    val kFloatArrayHandler   = handle(symbols.floatArray)
-    val kDoubleArrayHandler  = handle(symbols.doubleArray)
-    val kBooleanArrayHandler = handle(symbols.booleanArray)
-    val kArrayHandler        = handle(symbols.array)
+    val arrayToHandle = context.ir.symbols.arrays.associate { it to handle(it) }
 
     private fun handle(symbol: IrClassSymbol) = ArrayHandle(
             arraySymbol = symbol,

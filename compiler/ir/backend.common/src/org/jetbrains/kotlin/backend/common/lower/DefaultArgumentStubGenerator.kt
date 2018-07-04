@@ -178,11 +178,11 @@ private fun nullConst(expression: IrElement, type: IrType, context: CommonBacken
     type.isFloat() -> IrConstImpl.float(expression.startOffset, expression.endOffset, type, 0.0F)
     type.isDouble() -> IrConstImpl.double(expression.startOffset, expression.endOffset, type, 0.0)
     type.isBoolean() -> IrConstImpl.boolean(expression.startOffset, expression.endOffset, type, false)
-    type.isByte() -> IrConstImpl.byte(expression.startOffset, expression.endOffset, type, 0)
+    type.isByte() || type.isUByte() -> IrConstImpl.byte(expression.startOffset, expression.endOffset, type, 0)
     type.isChar() -> IrConstImpl.char(expression.startOffset, expression.endOffset, type, 0.toChar())
-    type.isShort() -> IrConstImpl.short(expression.startOffset, expression.endOffset, type, 0)
-    type.isInt() -> IrConstImpl.int(expression.startOffset, expression.endOffset, type, 0)
-    type.isLong() -> IrConstImpl.long(expression.startOffset, expression.endOffset, type, 0)
+    type.isShort() || type.isUShort() -> IrConstImpl.short(expression.startOffset, expression.endOffset, type, 0)
+    type.isInt() || type.isUInt() -> IrConstImpl.int(expression.startOffset, expression.endOffset, type, 0)
+    type.isLong() || type.isULong() -> IrConstImpl.long(expression.startOffset, expression.endOffset, type, 0)
     else -> IrConstImpl.constNull(expression.startOffset, expression.endOffset, context.irBuiltIns.nothingNType)
 }
 

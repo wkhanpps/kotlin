@@ -33,6 +33,8 @@ interface CommonBackendContext : BackendContext {
     //TODO move to builtins
     fun getInternalFunctions(name: String): List<FunctionDescriptor>
 
+    val hasUnsignedTypes: Boolean get() = false
+
     val reflectionTypes: ReflectionTypes
 
     fun log(message: () -> String)
