@@ -229,7 +229,7 @@ public class FunctionCodegen {
             v.getSerializationBindings().put(METHOD_FOR_FUNCTION, CodegenUtilKt.unwrapFrontendVersion(functionDescriptor), asmMethod);
         }
 
-        generateMethodAnnotations(functionDescriptor, asmMethod, mv);
+        generateMethodAnnotations(functionDescriptor, asmMethod, mv, memberCodegen, typeMapper);
 
         generateParameterAnnotations(functionDescriptor, mv, jvmSignature);
         GenerateJava8ParameterNamesKt.generateParameterNames(functionDescriptor, mv, jvmSignature, state, (flags & ACC_SYNTHETIC) != 0);
@@ -458,14 +458,6 @@ public class FunctionCodegen {
                     return null;
                 }
         );
-    }
-
-    private void generateMethodAnnotations(
-            @NotNull FunctionDescriptor functionDescriptor,
-            Method asmMethod,
-            MethodVisitor mv
-    ) {
-        generateMethodAnnotations(functionDescriptor, asmMethod, mv, memberCodegen, typeMapper);
     }
 
     public static void generateMethodAnnotations(
