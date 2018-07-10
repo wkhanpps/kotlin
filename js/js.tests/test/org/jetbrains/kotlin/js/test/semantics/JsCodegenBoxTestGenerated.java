@@ -136,6 +136,11 @@ public class JsCodegenBoxTestGenerated extends AbstractJsCodegenBoxTest {
             runTest("compiler/testData/codegen/box/annotations/resolveWithLowPriorityAnnotation.kt");
         }
 
+        @TestMetadata("singleAssignmentToVarargInAnnotation.kt")
+        public void testSingleAssignmentToVarargInAnnotation() throws Exception {
+            runTest("compiler/testData/codegen/box/annotations/singleAssignmentToVarargInAnnotation.kt");
+        }
+
         @TestMetadata("varargInAnnotationParameter.kt")
         public void testVarargInAnnotationParameter() throws Exception {
             runTest("compiler/testData/codegen/box/annotations/varargInAnnotationParameter.kt");
@@ -19270,6 +19275,11 @@ public class JsCodegenBoxTestGenerated extends AbstractJsCodegenBoxTest {
         @TestMetadata("kt796_797.kt")
         public void testKt796_797() throws Exception {
             runTest("compiler/testData/codegen/box/vararg/kt796_797.kt");
+        }
+
+        @TestMetadata("singleAssignmentToVarargsInFunction.kt")
+        public void testSingleAssignmentToVarargsInFunction() throws Exception {
+            runTest("compiler/testData/codegen/box/vararg/singleAssignmentToVarargsInFunction.kt");
         }
 
         @TestMetadata("spreadCopiesArray.kt")
