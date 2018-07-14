@@ -309,8 +309,8 @@ abstract class RandomSmokeTest {
 
             val rangeSize = to - from
             var noChanges = array contentEquals prev
-            if (noChanges && rangeSize == 1) {
-                // there's a small chance that a single byte range will get the same value as before
+            if (noChanges && rangeSize <= 4) {
+                // there's a small chance that a small range will get the same value as before
                 // run randomization again
                 subject.nextBytes(array, from, to)
                 noChanges = array contentEquals prev
