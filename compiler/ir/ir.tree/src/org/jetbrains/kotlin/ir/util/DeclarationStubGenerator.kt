@@ -39,6 +39,11 @@ class DeclarationStubGenerator(
 ) {
     private val lazyTable = IrLazySymbolTable(this, symbolTable)
 
+    internal var unboundSymbolGeneration: Boolean
+        get() = lazyTable.unboundSymbolGeneration
+        set(value) { lazyTable.unboundSymbolGeneration = value }
+
+
     private val typeTranslator = TypeTranslator(lazyTable, languageVersionSettings, LazyScopedTypeParametersResolver())
     private val constantValueGenerator = ConstantValueGenerator(moduleDescriptor, lazyTable)
 

@@ -37,6 +37,7 @@ class ExternalDependenciesGenerator(
     private inner class DependencyGenerationTask(val irModule: IrModuleFragment) {
 
         fun run() {
+            stubGenerator.unboundSymbolGeneration = true
             ArrayList(symbolTable.unboundClasses).forEach {
                 stubGenerator.generateClassStub(it.descriptor)
             }
