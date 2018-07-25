@@ -8,9 +8,7 @@ package org.jetbrains.kotlin.ir.declarations.lazy
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
 import org.jetbrains.kotlin.ir.declarations.IrDeclarationOrigin
 import org.jetbrains.kotlin.ir.declarations.IrTypeParameter
-import org.jetbrains.kotlin.ir.declarations.impl.IrDeclarationBase
 import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
-import org.jetbrains.kotlin.ir.symbols.impl.IrTypeParameterSymbolImpl
 import org.jetbrains.kotlin.ir.types.IrType
 import org.jetbrains.kotlin.ir.util.DeclarationStubGenerator
 import org.jetbrains.kotlin.ir.util.TypeTranslator
@@ -18,7 +16,6 @@ import org.jetbrains.kotlin.ir.visitors.IrElementTransformer
 import org.jetbrains.kotlin.ir.visitors.IrElementVisitor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.types.Variance
-import org.jetbrains.kotlin.utils.SmartList
 
 class IrLazyTypeParameter(
     startOffset: Int,
@@ -51,6 +48,10 @@ class IrLazyTypeParameter(
             )
 
     override val descriptor: TypeParameterDescriptor get() = symbol.descriptor
+
+    init {
+        symbol.bind(this)
+    }
 
     override val superTypes: MutableList<IrType> by lazy {
         val descriptor = symbol.descriptor
