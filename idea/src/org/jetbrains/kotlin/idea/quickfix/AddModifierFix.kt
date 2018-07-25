@@ -30,16 +30,13 @@ import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.refactoring.canRefactor
-import org.jetbrains.kotlin.idea.util.actualsForExpected
-import org.jetbrains.kotlin.idea.util.isExpectDeclaration
-import org.jetbrains.kotlin.idea.util.liftToExpected
+import org.jetbrains.kotlin.idea.util.runOnExpectAndAllActuals
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.lexer.KtTokens.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
-import org.jetbrains.kotlin.psi.psiUtil.hasActualModifier
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
@@ -73,20 +70,8 @@ open class AddModifierFix(
 
     override fun invoke(project: Project, editor: Editor?, file: KtFile) {
         val originalElement = element
-        if (originalElement is KtDeclaration && modifier in modalityModifiers) {
-            if (originalElement.isExpectDeclaration()) {
-                originalElement.actualsForExpected().forEach {
-                    invokeOnElement(it)
-                }
-            } else if (originalElement.hasActualModifier()) {
-                val expectElement = originalElement.liftToExpected()
-                expectElement?.actualsForExpected()?.forEach {
-                    if (it !== element) {
-                        invokeOnElement(it)
-                    }
-                }
-                invokeOnElement(expectElement)
-            }
+        if (originalElement is KtDeclaration && modifier.isMultiplatformPersistent()) {
+            originalElement.runOnExpectAndAllActuals { invokeOnElement(it) }
         }
         invokeOnElement(originalElement)
     }
@@ -97,6 +82,10 @@ open class AddModifierFix(
     }
 
     companion object {
+
+        private fun KtModifierKeywordToken.isMultiplatformPersistent(): Boolean =
+            this in KtTokens.MODALITY_MODIFIERS || this == KtTokens.INLINE_KEYWORD
+
         private val modalityModifiers = setOf(ABSTRACT_KEYWORD, OPEN_KEYWORD, FINAL_KEYWORD)
 
         fun getElementName(modifierListOwner: KtModifierListOwner): String {
