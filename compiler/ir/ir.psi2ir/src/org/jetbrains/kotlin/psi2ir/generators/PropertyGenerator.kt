@@ -114,7 +114,7 @@ class PropertyGenerator(declarationGenerator: DeclarationGenerator) : Declaratio
                         }
                     else
                         null
-
+            declarationGenerator.generateGlobalTypeParametersDeclarations(irProperty, propertyDescriptor.typeParameters)
             irProperty.getter = generateGetterIfRequired(ktProperty, propertyDescriptor)
             irProperty.setter = generateSetterIfRequired(ktProperty, propertyDescriptor)
         }

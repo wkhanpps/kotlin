@@ -95,20 +95,6 @@ class DeclarationGenerator(override val context: GeneratorContext) : Generator {
         }
     }
 
-    fun generateScopedTypeParameterDeclarations(
-        irTypeParametersOwner: IrTypeParametersContainer,
-        from: List<TypeParameterDescriptor>
-    ) {
-        generateTypeParameterDeclarations(irTypeParametersOwner, from) { startOffset, endOffset, typeParameterDescriptor ->
-            context.symbolTable.declareScopedTypeParameter(
-                startOffset,
-                endOffset,
-                IrDeclarationOrigin.DEFINED,
-                typeParameterDescriptor
-            )
-        }
-    }
-
     private fun generateTypeParameterDeclarations(
         irTypeParametersOwner: IrTypeParametersContainer,
         from: List<TypeParameterDescriptor>,
