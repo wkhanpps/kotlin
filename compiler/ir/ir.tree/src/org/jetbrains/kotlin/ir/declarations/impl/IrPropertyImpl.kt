@@ -41,7 +41,7 @@ class IrPropertyImpl(
     override val isDelegated: Boolean,
     override val isExternal: Boolean
 ) : IrDeclarationBase(startOffset, endOffset, origin),
-    IrProperty {
+    IrProperty, IrTypeParametersContainer {
 
     constructor(
         startOffset: Int,
