@@ -30,12 +30,16 @@ import org.jetbrains.kotlin.idea.caches.resolve.resolveToDescriptorIfAny
 import org.jetbrains.kotlin.idea.core.quickfix.QuickFixUtil
 import org.jetbrains.kotlin.idea.inspections.KotlinUniversalQuickFix
 import org.jetbrains.kotlin.idea.refactoring.canRefactor
+import org.jetbrains.kotlin.idea.util.actualsForExpected
+import org.jetbrains.kotlin.idea.util.isExpectDeclaration
+import org.jetbrains.kotlin.idea.util.liftToExpected
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.lexer.KtTokens.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
+import org.jetbrains.kotlin.psi.psiUtil.hasActualModifier
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.DescriptorToSourceUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
@@ -55,16 +59,36 @@ open class AddModifierFix(
 
     override fun getFamilyName() = "Add modifier"
 
-    override fun invoke(project: Project, editor: Editor?, file: KtFile) {
+    private fun invokeOnElement(element: KtModifierListOwner?) {
         element?.addModifier(modifier)
 
         if (modifier == KtTokens.ABSTRACT_KEYWORD && (element is KtProperty || element is KtNamedFunction)) {
-            element?.containingClass()?.run {
+            element.containingClass()?.run {
                 if (!hasModifier(KtTokens.ABSTRACT_KEYWORD) && !hasModifier(KtTokens.SEALED_KEYWORD)) {
                     addModifier(KtTokens.ABSTRACT_KEYWORD)
                 }
             }
         }
+    }
+
+    override fun invoke(project: Project, editor: Editor?, file: KtFile) {
+        val originalElement = element
+        if (originalElement is KtDeclaration && modifier in modalityModifiers) {
+            if (originalElement.isExpectDeclaration()) {
+                originalElement.actualsForExpected().forEach {
+                    invokeOnElement(it)
+                }
+            } else if (originalElement.hasActualModifier()) {
+                val expectElement = originalElement.liftToExpected()
+                expectElement?.actualsForExpected()?.forEach {
+                    if (it !== element) {
+                        invokeOnElement(it)
+                    }
+                }
+                invokeOnElement(expectElement)
+            }
+        }
+        invokeOnElement(originalElement)
     }
 
     override fun isAvailable(project: Project, editor: Editor?, file: KtFile): Boolean {
