@@ -70,7 +70,7 @@ public class KotlinFindPropertyUsagesDialog extends JavaFindUsagesDialog<KotlinP
         options.isReadAccess = isSelected(readAccesses);
         options.isWriteAccess = isSelected(writeAccesses);
         options.setSearchOverrides(isSelected(overrideUsages));
-        options.setSearchExpected(isSelected(expectedUsages));
+        options.setSearchExpected(expectedUsages == null || expectedUsages.isSelected());
     }
 
     @Override
