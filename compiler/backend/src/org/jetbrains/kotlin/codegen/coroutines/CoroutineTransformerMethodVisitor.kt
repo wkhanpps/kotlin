@@ -66,6 +66,7 @@ class CoroutineTransformerMethodVisitor(
 
         FixStackMethodTransformer().transform(containingClassInternalName, methodNode)
         RedundantLocalsEliminationMethodTransformer(languageVersionSettings).transform(containingClassInternalName, methodNode)
+        fixCoercedLocalVariablesStartLabel(methodNode)
         updateMaxStack(methodNode)
 
         val suspensionPoints = collectSuspensionPoints(methodNode)
@@ -152,6 +153,41 @@ class CoroutineTransformerMethodVisitor(
 
         dropSuspensionMarkers(methodNode, suspensionPoints)
         methodNode.removeEmptyCatchBlocks()
+    }
+
+    // Fix startLabel for primitives.
+    // In like val a = suspendReturnsInt()
+    // `a` is coerced from Object to int, and coercion happens before scopeStart's mark:
+    //  LL
+    //   ...
+    //   ISTORE N
+    //  LM
+    //   ...
+    //  LOCALVARIABLE name LM LK N
+    // Thus, startLabel shall point to previous label:
+    //  LOCALVARIABLE name LL LK N
+    private fun fixCoercedLocalVariablesStartLabel(methodNode: MethodNode) {
+        val primitives = methodNode.localVariables.filter { AsmUtil.isPrimitive(Type.getType(it.desc)) }.toMutableSet()
+        if (primitives.isEmpty()) return
+        val livenessFrames = analyzeLiveness(methodNode)
+        for (primitive in primitives) {
+            // Normally, the variable should not be alive at start label
+            if (livenessFrames[methodNode.instructions.indexOf(primitive.start)].isAlive(primitive.index)) {
+                val store = primitive.start.previous as? VarInsnNode ?: continue
+                if (store.`var` != primitive.index) continue
+                val checkcast = store.previous ?: continue
+                primitive.start = findLabelOfInsn(checkcast)
+            }
+        }
+    }
+
+    private fun findLabelOfInsn(insn: AbstractInsnNode?): LabelNode? {
+        var current = insn
+        @Suppress("SENSELESS_COMPARISON") // previous can return null
+        while (current != null && current !is LabelNode) {
+            current = current.previous
+        }
+        return current as LabelNode?
     }
 
     private fun removeFakeContinuationConstructorCall(methodNode: MethodNode) {
