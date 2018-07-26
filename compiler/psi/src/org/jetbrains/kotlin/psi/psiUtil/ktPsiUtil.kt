@@ -593,7 +593,7 @@ fun isTopLevelInFileOrScript(element: PsiElement): Boolean {
     val parent = element.parent
     return when (parent) {
         is KtFile -> true
-        is KtBlockExpression -> parent.parent is KtScript
+        is KtBlockExpression -> parent.parent.parent is KtScript
         else -> false
     }
 }
