@@ -5,17 +5,17 @@
 
 package org.jetbrains.kotlin.ir.declarations.lazy
 
-import org.jetbrains.kotlin.descriptors.ClassConstructorDescriptor
-import org.jetbrains.kotlin.descriptors.ClassDescriptor
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
+import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.symbols.*
 import org.jetbrains.kotlin.ir.util.DeclarationStubGenerator
 import org.jetbrains.kotlin.ir.util.ReferenceSymbolTable
 import org.jetbrains.kotlin.ir.util.SymbolTable
 
 
-class IrLazySymbolTable(val originalTable: SymbolTable) : ReferenceSymbolTable by originalTable{
+class IrLazySymbolTable(private val originalTable: SymbolTable) : ReferenceSymbolTable by originalTable {
+    override val declarationSystemTable: SymbolTable = originalTable
+
+    override val referenceSymbolTable: ReferenceSymbolTable = this
 
     /*Don't force builtins class linking before unbound symbols linking: otherwise stdlib compilation will failed*/
     var stubGenerator: DeclarationStubGenerator? = null
@@ -58,5 +58,13 @@ class IrLazySymbolTable(val originalTable: SymbolTable) : ReferenceSymbolTable b
                 stubGenerator?.generateOrGetTypeParameterStub(classifier)
             }
         }
+    }
+
+    override fun referenceFunction(callable: CallableDescriptor): IrFunctionSymbol {
+        return super.referenceFunction(callable)
+    }
+
+    override fun referenceClassifier(classifier: ClassifierDescriptor): IrClassifierSymbol {
+        return super.referenceClassifier(classifier)
     }
 }

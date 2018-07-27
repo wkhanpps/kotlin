@@ -63,6 +63,7 @@ class ExternalDependenciesGenerator(
             assert(symbolTable.unboundEnumEntries.isEmpty())
             assert(symbolTable.unboundSimpleFunctions.isEmpty())
             assert(symbolTable.unboundTypeParameters.isEmpty())
+            //stubGenerator.unboundSymbolGeneration = false
         }
     }
 }

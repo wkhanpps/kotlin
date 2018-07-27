@@ -41,7 +41,7 @@ class DeclarationStubGenerator(
 
     internal var unboundSymbolGeneration: Boolean
         get() = lazyTable.stubGenerator != null
-        set(value) { lazyTable.stubGenerator = this }
+        set(value) { lazyTable.stubGenerator = if (value)  this else null }
 
 
     private val typeTranslator = TypeTranslator(lazyTable, languageVersionSettings, LazyScopedTypeParametersResolver(lazyTable))

@@ -20,6 +20,7 @@ import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.ir.declarations.*
 import org.jetbrains.kotlin.ir.expressions.IrReturnableBlock
 import org.jetbrains.kotlin.ir.symbols.*
+import org.jetbrains.kotlin.ir.util.dump
 
 abstract class IrSymbolBase<out D : DeclarationDescriptor>(override val descriptor: D) : IrSymbol
 
@@ -45,7 +46,7 @@ abstract class IrBindableSymbolBase<out D : DeclarationDescriptor, B : IrSymbolO
         if (_owner == null)
             _owner = owner
         else
-            throw IllegalStateException("${javaClass.simpleName} for $descriptor is already bound")
+            throw IllegalStateException("${javaClass.simpleName} for $descriptor is already bound: ${owner.symbol.descriptor.containingDeclaration}")
     }
 
     override val isBound: Boolean
