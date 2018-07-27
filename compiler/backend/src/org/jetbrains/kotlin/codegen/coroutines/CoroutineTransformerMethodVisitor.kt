@@ -66,7 +66,6 @@ class CoroutineTransformerMethodVisitor(
 
         FixStackMethodTransformer().transform(containingClassInternalName, methodNode)
         RedundantLocalsEliminationMethodTransformer(languageVersionSettings).transform(containingClassInternalName, methodNode)
-        fixCoercedLocalVariablesStartLabel(methodNode)
         updateMaxStack(methodNode)
 
         val suspensionPoints = collectSuspensionPoints(methodNode)
@@ -153,37 +152,43 @@ class CoroutineTransformerMethodVisitor(
 
         dropSuspensionMarkers(methodNode, suspensionPoints)
         methodNode.removeEmptyCatchBlocks()
+        fixCoercedLocalVariablesStartLabel(methodNode)
     }
 
     // Fix startLabel for primitives.
     // In like val a = suspendReturnsInt()
     // `a` is coerced from Object to int, and coercion happens before scopeStart's mark:
     //  LL
+    //   LINENUMBER ...
     //   ...
     //   ISTORE N
     //  LM
+    //   /* no lineNumber here */
     //   ...
     //  LOCALVARIABLE name LM LK N
-    // Thus, startLabel shall point to previous label:
-    //  LOCALVARIABLE name LL LK N
+    // Thus, move linenumber to correct label
     private fun fixCoercedLocalVariablesStartLabel(methodNode: MethodNode) {
         val primitives = methodNode.localVariables.filter { AsmUtil.isPrimitive(Type.getType(it.desc)) }.toMutableSet()
         if (primitives.isEmpty()) return
-        val livenessFrames = analyzeLiveness(methodNode)
         for (primitive in primitives) {
-            // Normally, the variable should not be alive at start label
-            if (livenessFrames[methodNode.instructions.indexOf(primitive.start)].isAlive(primitive.index)) {
-                val store = primitive.start.previous as? VarInsnNode ?: continue
-                if (store.`var` != primitive.index) continue
+            val store = primitive.start.previous
+            if (store is VarInsnNode && store.`var` == primitive.index) {
                 val checkcast = store.previous ?: continue
-                primitive.start = findLabelOfInsn(checkcast)
+                val label = findLabelOfInsn(checkcast) ?: continue
+                val lineNumber = label.next as? LineNumberNode ?: continue
+                var tmp: AbstractInsnNode? = primitive.start
+                while (tmp != null && (tmp.next is LabelNode || tmp.next.opcode == Opcodes.NOP)) {
+                    tmp = tmp.next
+                }
+                primitive.start = findLabelOfInsn(tmp)
+                methodNode.instructions.remove(lineNumber)
+                methodNode.instructions.insert(tmp, lineNumber)
             }
         }
     }
 
     private fun findLabelOfInsn(insn: AbstractInsnNode?): LabelNode? {
         var current = insn
-        @Suppress("SENSELESS_COMPARISON") // previous can return null
         while (current != null && current !is LabelNode) {
             current = current.previous
         }
