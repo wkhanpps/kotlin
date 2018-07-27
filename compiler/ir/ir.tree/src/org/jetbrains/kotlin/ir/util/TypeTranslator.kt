@@ -22,7 +22,7 @@ import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.typesApproximation.approximateCapturedTypes
 
 class TypeTranslator(
-    private val symbolTable: SymbolTable,
+    private val symbolTable: ReferenceSymbolTable,
     val languageVersionSettings: LanguageVersionSettings,
     private val typeParametersResolver: TypeParametersResolver = ScopedTypeParametersResolver()
 ) {

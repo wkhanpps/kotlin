@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.ir.symbols.IrTypeParameterSymbol
 import org.jetbrains.kotlin.ir.util.*
 import java.util.*
 
-class LazyScopedTypeParametersResolver(private val symbolTable: SymbolTable) : TypeParametersResolver {
+class LazyScopedTypeParametersResolver(private val symbolTable: ReferenceSymbolTable) : TypeParametersResolver {
 
     private val typeParameterScopes = ArrayDeque<IrTypeParametersContainer>()
 
@@ -27,16 +27,7 @@ class LazyScopedTypeParametersResolver(private val symbolTable: SymbolTable) : T
         typeParameterScopes.removeFirst()
     }
 
-    //TODO optimize
     override fun resolveScopedTypeParameter(typeParameterDescriptor: TypeParameterDescriptor): IrTypeParameterSymbol? {
         return symbolTable.referenceTypeParameter(typeParameterDescriptor)
     }
-
-    private fun calcParent(container: IrTypeParametersContainer): IrTypeParametersContainer? {
-        return when(container) {
-            is IrClass -> if (container.isObject || !container.isInner) null else container.parent
-            else -> (container as? IrDeclaration)?.parent
-        } as? IrTypeParametersContainer
-    }
-
 }

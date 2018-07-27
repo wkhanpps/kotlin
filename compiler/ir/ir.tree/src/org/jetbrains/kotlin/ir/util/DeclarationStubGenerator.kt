@@ -36,11 +36,12 @@ class DeclarationStubGenerator(
     val origin: IrDeclarationOrigin,
     val languageVersionSettings: LanguageVersionSettings
 ) {
-    private val lazyTable = IrLazySymbolTable(this, symbolTable)
+
+    private val lazyTable = symbolTable.lazyWrapper
 
     internal var unboundSymbolGeneration: Boolean
-        get() = lazyTable.unboundSymbolGeneration
-        set(value) { lazyTable.unboundSymbolGeneration = value }
+        get() = lazyTable.stubGenerator != null
+        set(value) { lazyTable.stubGenerator = this }
 
 
     private val typeTranslator = TypeTranslator(lazyTable, languageVersionSettings, LazyScopedTypeParametersResolver(lazyTable))
