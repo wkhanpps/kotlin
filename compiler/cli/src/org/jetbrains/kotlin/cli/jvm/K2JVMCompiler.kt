@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.cli.common.*
 import org.jetbrains.kotlin.cli.common.ExitCode.*
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoot
+import org.jetbrains.kotlin.cli.common.config.kotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.messages.CompilerMessageSeverity.*
 import org.jetbrains.kotlin.cli.common.messages.FilteringMessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageCollector
@@ -91,12 +92,16 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
             }
         }
 
+        for (path in arguments.commonSources.orEmpty()) {
+            configuration.addKotlinSourceRoot(path, isCommon = true)
+        }
+
         configuration.put(CommonConfigurationKeys.MODULE_NAME, arguments.moduleName ?: JvmAbi.DEFAULT_MODULE_NAME)
 
         if (arguments.buildFile == null) {
             configureContentRoots(paths, arguments, configuration)
 
-            if (arguments.freeArgs.isEmpty() && !arguments.version) {
+            if (configuration.kotlinSourceRoots.isEmpty() && !arguments.version) {
                 if (arguments.script) {
                     messageCollector.report(ERROR, "Specify script source path to evaluate")
                     return COMPILATION_ERROR
